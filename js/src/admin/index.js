@@ -1,8 +1,8 @@
 import app from 'flarum/admin/app';
 
-app.initializers.add('hertz-dev/flarum-ext-embed-video', () => {
+app.initializers.add('hertz-dev-embed-video', () => {
   app.extensionData
-    .for('hertz-dev/flarum-ext-embed-video')
+    .for('hertz-dev-embed-video')
     
     // 1. 播放器主题色 (Theme Color)
     .registerSetting({

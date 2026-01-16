@@ -14,7 +14,6 @@ function initPlayer(element) {
   const containers = element.querySelectorAll('.hertz-video-container');
 
   containers.forEach((el) => {
-    // 防止重复初始化
     if (el.dataset.initialized) return;
 
     const url = el.dataset.url;
@@ -22,18 +21,16 @@ function initPlayer(element) {
     const theme = app.forum.attribute('hertzEmbedVideoTheme') || '#ffad00';
     const lang = app.forum.attribute('hertzEmbedVideoLang') || 'zh-cn';
     const defaultPoster = app.forum.attribute('hertzEmbedVideoDefaultPoster') || '';
+    const logo = app.forum.attribute('hertzEmbedVideoLogo') || '';
     
-    // 解析画质参数 (格式: SD;http://.../sd.m3u8,HD;http://.../hd.m3u8)
     let quality = [];
     if (qualitiesStr) {
       quality = qualitiesStr.split(',').map(item => {
         const parts = item.split(';');
-        // 兼容性处理：防止格式错误导致崩溃
         if (parts.length < 2) return null;
         return { html: parts[0], url: parts[1] };
-      }).filter(Boolean); // 过滤掉无效项
+      }).filter(Boolean);
 
-      // 如果有画质列表，默认选中第一个
       if (quality.length > 0) quality[0].default = true;
     }
 
@@ -41,6 +38,7 @@ function initPlayer(element) {
       container: el,
       url: url,
       poster: defaultPoster,
+      logo: logo,
       quality: quality,
       theme: theme,
       volume: 0.5,
@@ -48,8 +46,12 @@ function initPlayer(element) {
       muted: false,
       autoplay: false,
       pip: true,
-      autoSize: false,
-      autoMini: true,
+      
+      // ✅ 已确认：这里必须为 false 以配合 CSS 强制比例
+      autoSize: false, 
+      // ✅ 已确认：这里必须为 false 以修复编辑时弹窗干扰
+      autoMini: false, 
+      
       setting: true,
       loop: false,
       flip: true,
@@ -59,15 +61,16 @@ function initPlayer(element) {
       fullscreenWeb: true,
       miniProgressBar: app.forum.attribute('hertzEmbedVideoMiniProgressBar'),
       airplay: app.forum.attribute('hertzEmbedVideoAirplay'),
-      lang: lang === 'zh-cn' ? 'zh-cn' : 'en', // 简易语言映射
+      lang: lang === 'zh-cn' ? 'zh-cn' : 'en',
       
-      // HLS (m3u8) 适配逻辑
       customType: {
         m3u8: function (video, url) {
           if (Hls.isSupported()) {
             const hls = new Hls();
             hls.loadSource(url);
             hls.attachMedia(video);
+            // 将 hls 实例挂载到 art 上，方便后续销毁
+            art.hls = hls; 
           } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
             video.src = url;
           }
@@ -75,25 +78,46 @@ function initPlayer(element) {
       },
     });
 
-    // 标记为已初始化
     el.dataset.initialized = 'true';
-    // 将实例挂载到元素上，方便后续销毁
+    // 将实例挂载到 DOM 元素上，方便后续读取和销毁
     el._artplayer = art;
+  });
+}
+
+// 销毁播放器的通用函数 (新增)
+function destroyPlayer(element) {
+  const containers = element.querySelectorAll('.hertz-video-container');
+  containers.forEach((el) => {
+    if (el._artplayer) {
+      // 如果有 hls 实例，先销毁 hls
+      if (el._artplayer.hls) {
+        el._artplayer.hls.destroy();
+      }
+      // 销毁播放器实例，但不移除 DOM (false)
+      el._artplayer.destroy(false);
+      el._artplayer = null;
+      el.dataset.initialized = '';
+    }
   });
 }
 
 app.initializers.add('hertz-dev/flarum-ext-embed-video', () => {
   
-  // 1. 在帖子列表中渲染播放器
+  // 1. 帖子列表：渲染与销毁
   extend(CommentPost.prototype, 'oncreate', function () {
     initPlayer(this.element);
   });
-
+  
   extend(CommentPost.prototype, 'onupdate', function () {
     initPlayer(this.element);
   });
 
-  // 2. 在编辑器预览中渲染播放器
+  // ✨ 新增：当帖子组件被移除时（如翻页），销毁播放器释放内存
+  extend(CommentPost.prototype, 'onremove', function () {
+    destroyPlayer(this.element);
+  });
+
+  // 2. 编辑预览：渲染与销毁
   extend(ComposerPostPreview.prototype, 'oncreate', function () {
     initPlayer(this.element);
   });
@@ -101,13 +125,17 @@ app.initializers.add('hertz-dev/flarum-ext-embed-video', () => {
   extend(ComposerPostPreview.prototype, 'onupdate', function () {
     initPlayer(this.element);
   });
+  
+  // ✨ 新增：预览组件移除时也清理
+  extend(ComposerPostPreview.prototype, 'onremove', function () {
+    destroyPlayer(this.element);
+  });
 
   // 3. 添加编辑器按钮
   extend(TextEditor.prototype, 'controlItems', function (items) {
-    // 只有有权限的用户才显示按钮
+    // ✨ 修复逻辑：如果没有权限，直接返回，不再添加按钮
     if (!app.forum.attribute('canCreateVideo')) {
-        // 如果后端有做严格权限控制，这里可以根据需要隐藏
-        // 但通常为了用户体验，可以让所有人都看到按钮，后端再拦截
+        return; 
     }
 
     items.add(
@@ -117,9 +145,8 @@ app.initializers.add('hertz-dev/flarum-ext-embed-video', () => {
           icon="fas fa-play-circle"
           class="Button Button--icon"
           onclick={() => {
-            // 插入新的 BBCode 格式
             this.attrs.composer.editor.insertAtCursor(
-              `[embed-video url="" qualities="" live="false"]`
+              `[embed-video url="" qualities="SD;URL,HD;URL" live="false"]`
             );
           }}
         />
