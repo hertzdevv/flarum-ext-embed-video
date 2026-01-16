@@ -1,0 +1,83 @@
+/* ==========================================================================
+   Hertz Embed Video - Forum Styles
+   ========================================================================== */
+
+/* 1. 播放器主容器 */
+.hertz-video-container {
+  display: block;
+  position: relative;
+  
+  /* 尺寸控制：桌面端最大 640px，强制 16:9 */
+  width: 100%;
+  max-width: 640px;
+  margin: 20px auto;
+  aspect-ratio: 16 / 9;
+  
+  /* 外观 */
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  background-color: #000;
+  overflow: hidden;
+  z-index: 1;
+
+  /* 重置 Flarum 样式污染 */
+  line-height: normal !important;
+  white-space: normal !important; 
+  text-align: left !important;
+  text-indent: 0 !important;
+  word-wrap: normal !important;
+  word-break: normal !important;
+}
+
+/* 2. ⚠️ 关键修复：强制 Artplayer 填满容器 */
+/* 这样无论视频比例如何，控制栏永远固定在 16:9 容器的最底部 */
+.hertz-video-container .art-video-player {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 8px;
+  z-index: 0;
+  
+  /* 内部样式重置 */
+  white-space: normal !important;
+  line-height: normal !important;
+}
+
+/* 3. 无权限提示框 */
+.video-no-permission {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  
+  width: 100%;
+  max-width: 640px;
+  margin: 20px auto;
+  aspect-ratio: 16 / 9;
+  
+  background: var(--body-bg); 
+  border: 2px dashed var(--control-bg);
+  border-radius: 8px;
+  color: var(--muted-color);
+  font-size: 14px;
+  text-align: center;
+  user-select: none;
+  transition: all 0.3s;
+
+  &:hover {
+    border-color: var(--primary-color);
+    color: var(--text-color);
+  }
+
+  i {
+    font-size: 24px;
+    margin-bottom: 10px;
+    opacity: 0.7;
+  }
+}
+
+/* 4. 编辑器预览修正 */
+.Composer .hertz-video-container {
+  margin: 10px auto;
+  box-shadow: none;
+  max-width: 100%;
+}

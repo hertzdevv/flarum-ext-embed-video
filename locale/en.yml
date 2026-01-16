@@ -1,0 +1,17 @@
+hertz-dev-embed-video:
+  admin:
+    settings:
+      options:
+        theme: Player Theme Color
+        lang: Default Interface Language
+        quality_switching: Enable Quality Switching
+        airplay: Allow Airplay
+        mini_progress_bar: Enable Mini Progress Bar
+        logo: Player Logo URL
+        default_poster: Default Video Poster URL # New
+    permissions:
+      can_create_video: Create video posts
+      can_view_video: View video contents
+  forum:
+    cannot_create: You do not have permission to create video posts.
+    no_permission: You do not have permission to view this video.

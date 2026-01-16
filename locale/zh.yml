@@ -1,0 +1,17 @@
+hertz-dev-embed-video:
+  admin:
+    settings:
+      options:
+        theme: 播放器主题色 (Theme)
+        lang: 界面默认语言
+        quality_switching: 开启多画质切换 (Quality Switching)
+        airplay: 允许 Airplay 投屏
+        mini_progress_bar: 启用迷你进度条 (Mini Progress Bar)
+        logo: 播放器 Logo 图片链接
+        default_poster: 默认视频封面 (Poster) # 新增
+    permissions:
+      can_create_video: 发布视频帖
+      can_view_video: 观看视频内容
+  forum:
+    cannot_create: 您没有权限在此发布视频。
+    no_permission: 您没有权限观看此视频。

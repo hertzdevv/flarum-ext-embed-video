@@ -1,0 +1,43 @@
+{
+    "name": "hertz-dev/flarum-ext-embed-video",
+    "description": "A modern video player for Flarum based on Artplayer, supporting HLS and quality switching.",
+    "keywords": [
+        "flarum",
+        "embed",
+        "video",
+        "artplayer",
+        "hls",
+        "m3u8",
+        "bbcode",
+        "streaming"
+    ],
+    "type": "flarum-extension",
+    "license": "MIT",
+    "require": {
+        "php": "^8.1",
+        "flarum/core": "^1.8.0"
+    },
+    "authors": [
+        {
+            "name": "HertzDev",
+            "email": "dev@onehz.cc",
+            "role": "Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Hertz\\EmbedVideo\\": "src/"
+        }
+    },
+    "extra": {
+        "flarum-extension": {
+            "title": "Hertz Embed Video",
+            "category": "feature",
+            "icon": {
+                "name": "fas fa-play-circle",
+                "backgroundColor": "#4D698E",
+                "color": "#fff"
+            }
+        }
+    }
+}
